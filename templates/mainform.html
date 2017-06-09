@@ -1,5 +1,9 @@
 {% extends "base.html" %}  
 
+{% block style %}
+    .error { color: red }
+{% endblock %}
+
 {% block content %}
 <h1>Signup</h1>
 <form method='POST'>
@@ -7,30 +11,30 @@
         <tr>
             <label>
                 <td>Username</td>
-                <td><input type="text" name="username" /></td>
-                <td><p>{{username_error}}</p><td>
+                <td><input type="text" name="username" value="{{username}}" /></td>
+                <td><span class="error">{{username_error}}</span><td>
             </label>
         </tr>
 
         <tr>
                 <td>Password</td>
-                <td><input type="password" name="pw"/></td>
-                <td><p>{{pw_error}}</p><td>
+                <td><input type="text" name="pw"/></td>
+                <td><span class="error">{{pw_error}}</span><td>
             <label>
         </tr>
 
         <tr>
                 <td>Verify Password</td>
-                <td><input type="password" name="verifypw"/></td>
-                <td><p>{{verifypw_error}}</p><td>
+                <td><input type="text" name="verifypw"/></td>
+                <td><span class="error">{{verifypw_error}}</span><td>
             </label>
         </tr>
 
         <tr>
             <label>
                 <td>Email (optional)</td>
-                <td><input type="email" name="email"/></td>
-                <td><p>{{email_error}}</p><td>
+                <td><input type="text" name="email" value={{email}}/></td>
+                <td><span class="error">{{email_error}}</span><td>
             </label>
         </tr>
     </table>
