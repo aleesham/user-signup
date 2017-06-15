@@ -58,7 +58,8 @@ def validate_form():
         # if there are an at and dot in the email, then check to make sure there are exactly one of each. if there isn't, then at_and_dot_bool stays False.
         if "@" in email and "." in email:
             # if there are exactly one of each, then at_and_dot_bool is true. If not, at_and_dot_bool stays false
-            if email.count("@") == 1 and email.count(".") == 1:
+            # I changed this for an issue. Assume we can have more than one dot.
+            if email.count("@") == 1: # and email.count(".") == 1:
                 at_and_dot_bool = True
 
         # if the length and spaces are not met, or the at and dot are not met, we throw an error
