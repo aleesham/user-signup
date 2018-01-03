@@ -1,82 +1,67 @@
-from flask import Flask, redirect, render_template, request
-import jinja2
+from flask import Flask, redirect, request, render_template
 
 app = Flask(__name__)
 app.config['DEBUG'] = True
 
-## Just renders the form
-@app.route('/')
-def display_form():
-    return render_template('mainform.html')
+def is_username_valid(username):
+    if len(username) < 3 or len(username) > 20:
+        return False
+    if ' ' in username:
+        return False
+    return True
 
-## helper function to check if a username or password is valid
-## invalid if len<3, len>20, or there is a space
-def is_valid_text(a_str):
-    # returns True if the string is 3-20 characters and has no spaces, returns False otherwise
-    return (2 < len(a_str)) & (len(a_str) < 21) & (" " not in a_str)
+def is_password_valid(password):
+    return is_username_valid(password)
 
-## Here we will validate everything necessary
-@app.route('/', methods=['POST'])
-def validate_form():
-    # Pull the data from the form
-    username = request.form['username']
-    pw = request.form['pw']
-    verifypw = request.form['verifypw']
-    email = request.form['email']
+def is_verify_password_valid(password, verify_password):
+    if password == verify_password:
+        return True
+    return False
 
-    # initialize errors
-    username_error = ''
-    pw_error = ''
-    verifypw_error = ''
-    email_error = ''
+def is_email_valid(email):
+    if len(email) == 0:
+        return True
+    if is_username_valid(email) and email.count('@')*email.count('.') == 1:
+        return True
+    return False
 
+@app.route('/', methods=['GET','POST'])
+def index():
+    errors = {'username' : '', 'password': '', 'verify_password': '', 'email' : '' }
+    
+    if request.method == 'POST':
+        username = request.form['username'].strip()
+        password = request.form['password'].strip()
+        verify_password = request.form['verify_password'].strip()
+        email = request.form['email'].strip()
+        valid = True                
 
-    # check if username was left empty or is invalid
-    if not len(username):
-        username_error = 'You failed to provide a username. '
-    elif not is_valid_text(username):
-        username_error = 'You entered an invalid username.'
+        if not is_username_valid(username):
+            errors['username'] = "This is not a valid username."
+            valid = False
 
-    # check if password was left empty or is invalid    
-    if not len(pw):
-        pw_error = 'You failed to provide a password.'
-    elif not is_valid_text(pw):
-        pw_error = 'You entered an invalid password.'
+        if not is_password_valid(password):
+            errors['password'] = "This is not a valid password."
+            valid = False
 
-    # check if verified password was left empty or if it matches password
-    if not len(verifypw):
-        verifypw_error = 'You failed to provide a password verification.'     
-    elif pw != verifypw:
-        verifypw_error = 'These passwords do not match.'
+        if not is_verify_password_valid(password, verify_password):
+            errors['verify_password'] = "Passwords do not match."
+            valid = False
 
-    # if email provided, check validity.
-    if len(email):
-        # check length and spaces
-        length_and_spaces_bool = is_valid_text(email)
-        # check for @, assume False at first.
-        at_and_dot_bool = False
-        # if there are an at and dot in the email, then check to make sure there are exactly one of each. if there isn't, then at_and_dot_bool stays False.
-        if "@" in email and "." in email:
-            # if there are exactly one of each, then at_and_dot_bool is true. If not, at_and_dot_bool stays false
-            # I changed this for an issue. Assume we can have more than one dot.
-            if email.count("@") == 1: # and email.count(".") == 1:
-                at_and_dot_bool = True
+        if not is_email_valid(email):
+            errors['email'] = "This is not a valid email."
+            valid = False
 
-        # if the length and spaces are not met, or the at and dot are not met, we throw an error
-        if not length_and_spaces_bool or not at_and_dot_bool:
-            email_error = 'You have entered an invalid email.'   
+        if valid:
+            return redirect('/welcome?username='+username)
+    
+        return render_template('signup.html', username=username, email=email, errors = errors)
 
-    # if no errors, redirect, otherwise re-render with errors
-    if not username_error + pw_error + verifypw_error + email_error:
-        return redirect("/welcome?name={0}".format(username))
-    else:
-        return render_template('mainform.html', username_error = username_error, pw_error = pw_error, verifypw_error = verifypw_error, email_error = email_error, username = username, email = email)
+    return render_template('signup.html', errors=errors)
 
-
-## If everything is validated, we will redirect to here.
 @app.route('/welcome')
 def welcome():
-    username = request.args.get('name')
-    return render_template('welcome.html', name = username)
+    username = request.args.get('username')
+    return render_template('welcome.html',username=username)
 
 app.run()
